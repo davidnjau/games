@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="sw">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Matatu Rush</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <h1 class="logo">Matatu<span>Rush</span></h1>
+        <div class="turn" id="turn" aria-live="polite"></div>
+        <button class="chip-btn" id="sound" type="button"></button>
+      </header>
+
+      <main class="arena">
+        <aside class="panel" id="panel-1" aria-label="Dereva 1"></aside>
+
+        <section class="board-wrap" id="board-wrap">
+          <canvas id="board" aria-label="Matatu Rush board, 9 by 9 junctions"></canvas>
+          <div class="toast" id="toast" role="status" aria-live="assertive"></div>
+
+          <div class="overlay" id="select" hidden>
+            <div class="sheet">
+              <h2 class="sheet-title" id="select-title"></h2>
+              <div class="pickers" id="pickers"></div>
+              <button class="cta" id="start" type="button"></button>
+            </div>
+          </div>
+
+          <div class="overlay" id="win" hidden>
+            <div class="sheet win-sheet">
+              <img class="win-icon" id="win-icon" alt="" />
+              <h2 class="win-title" id="win-title"></h2>
+              <p class="win-sub" id="win-sub"></p>
+              <div class="row">
+                <button class="cta" id="rematch" type="button"></button>
+                <button class="ghost" id="change" type="button"></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel" id="panel-2" aria-label="Dereva 2"></aside>
+      </main>
+
+      <footer class="controls">
+        <div class="actions" role="group" aria-label="Actions">
+          <button class="action" id="btn-drive" type="button"><kbd>D</kbd><span></span></button>
+          <button class="action" id="btn-spikes" type="button"><kbd>S</kbd><span></span></button>
+          <button class="action undo" id="btn-undo" type="button"><kbd>Z</kbd><span></span></button>
+        </div>
+        <p class="hint" id="hint"></p>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

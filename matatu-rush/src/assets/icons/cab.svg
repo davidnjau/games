@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180" role="img"><title>Digital cab — the clean white hatchback</title>
+<rect x="0" y="0" width="180" height="180" rx="32" fill="#0E3B2E"/>
+<path d="M20 124 L20 100 Q22 90 34 88 L60 86 L80 66 Q84 62 92 62 L124 62 Q132 62 138 70 L152 86 Q162 88 162 100 L162 124 Z" fill="#F4F4F2"/>
+<path d="M66 86 L84 68 L106 68 L106 86 Z" fill="#1E2A38"/>
+<path d="M112 68 L128 68 Q132 68 136 74 L145 86 L112 86 Z" fill="#1E2A38"/>
+<rect x="22" y="102" width="138" height="5" fill="#00C46A"/>
+<rect x="152" y="94" width="8" height="5" rx="2" fill="#FAC775"/>
+<rect x="22" y="94" width="6" height="5" rx="2" fill="#E24B4A"/>
+<line x1="100" y1="92" x2="108" y2="92" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>
+<circle cx="52" cy="124" r="13" fill="#111"/><circle cx="52" cy="124" r="6" fill="#D0D0D0"/>
+<circle cx="132" cy="124" r="13" fill="#111"/><circle cx="132" cy="124" r="6" fill="#D0D0D0"/>
+<circle cx="90" cy="40" r="10" fill="none" stroke="#00C46A" stroke-width="3"/><circle cx="90" cy="40" r="3" fill="#00C46A"/>
+<line x1="90" y1="50" x2="90" y2="56" stroke="#00C46A" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="sw">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Kanjo Escape</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <h1 class="logo">Kanjo <span>Escape</span></h1>
+        <span class="side-chip" id="side-chip" hidden></span>
+        <div class="top-actions">
+          <button class="chip-btn" id="sound" type="button"></button>
+          <button class="chip-btn" id="to-menu" type="button" hidden></button>
+        </div>
+      </header>
+
+      <section class="menu" id="menu">
+        <p class="tagline" id="tagline"></p>
+        <div class="side-cards">
+          <button class="side-card hawker" id="pick-hawker" type="button">
+            <img src="" alt="" data-icon="hawker" />
+            <span class="side-name"></span>
+            <span class="side-sub"></span>
+          </button>
+          <button class="side-card kanjo" id="pick-kanjo" type="button">
+            <img src="" alt="" data-icon="truck" />
+            <span class="side-name"></span>
+            <span class="side-sub"></span>
+          </button>
+        </div>
+        <div class="rules">
+          <h2 id="rules-title"></h2>
+          <ul id="rules-list"></ul>
+        </div>
+      </section>
+
+      <main class="game" id="game" hidden>
+        <section class="board-col">
+          <div class="board-wrap">
+            <canvas id="board" aria-label="Ramani ya CBD ya Nairobi"></canvas>
+            <div class="toast" id="toast" role="status" aria-live="assertive"></div>
+            <div class="overlay" id="end" hidden>
+              <div class="end-sheet">
+                <img class="end-icon" id="end-icon" alt="" />
+                <h2 class="end-title" id="end-title"></h2>
+                <p class="end-sub" id="end-sub"></p>
+                <div class="row">
+                  <button class="cta" id="rematch" type="button"></button>
+                  <button class="ghost" id="end-menu" type="button"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="place" id="place" aria-live="polite">&nbsp;</p>
+        </section>
+
+        <aside class="side">
+          <div class="status" id="status"></div>
+
+          <div class="clock">
+            <span class="clock-round" id="round"></span>
+            <span class="clock-reveal" id="reveal"></span>
+          </div>
+
+          <div class="block">
+            <h3 id="trail-title"></h3>
+            <ol class="trail" id="trail"></ol>
+            <div class="legend"><span class="lg road"></span>Barabara <span class="lg alley"></span>Alley <span class="lg seen"></span>Ameonekana</div>
+          </div>
+
+          <div class="block">
+            <h3 id="squad-title"></h3>
+            <div class="squad" id="squad"></div>
+            <div class="squad-actions" id="squad-actions">
+              <button class="ghost small" id="hold" type="button"></button>
+              <button class="cta small" id="end-turn" type="button"></button>
+            </div>
+          </div>
+
+          <label class="intel">
+            <input type="checkbox" id="intel" checked />
+            <span class="intel-label" id="intel-label"></span>
+            <span class="intel-hint" id="intel-hint"></span>
+          </label>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

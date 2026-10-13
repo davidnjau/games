@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180" role="img"><title>Kanjo askari on foot</title>
+<rect x="0" y="0" width="180" height="180" rx="32" fill="#1D3A28"/>
+<ellipse cx="90" cy="168" rx="34" ry="5" fill="#14291C"/>
+<path d="M56 154 Q56 106 90 102 Q124 106 124 154 Z" fill="#3E7D4F"/>
+<rect x="58" y="128" width="64" height="7" fill="#1E2A38"/>
+<rect x="84" y="127" width="12" height="9" rx="2" fill="#F2C744"/>
+<circle cx="106" cy="116" r="5" fill="#F2C744"/>
+<rect x="72" y="150" width="14" height="16" rx="3" fill="#1E2A38"/>
+<rect x="94" y="150" width="14" height="16" rx="3" fill="#1E2A38"/>
+<circle cx="90" cy="82" r="18" fill="#6B3E26"/>
+<path d="M68 72 Q90 50 112 72 Z" fill="#2B5C38"/>
+<rect x="64" y="70" width="52" height="7" rx="3" fill="#1E2A38"/>
+<circle cx="90" cy="64" r="4" fill="#F2C744"/>
+<line x1="96" y1="92" x2="110" y2="100" stroke="#D0D0D0" stroke-width="4" stroke-linecap="round"/>
+<circle cx="113" cy="101" r="4" fill="#D0D0D0"/>
+<path d="M120 92 Q128 86 126 78 M126 98 Q138 94 138 84" fill="none" stroke="#F2C744" stroke-width="3" stroke-linecap="round"/>
+</svg>
