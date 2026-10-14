@@ -1,0 +1,17 @@
+{
+  "name": "games",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm --prefix kanjo-escape run build && npm --prefix matatu-rush run build",
+    "start": "tsx server/index.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.23.15",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

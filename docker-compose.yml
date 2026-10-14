@@ -1,0 +1,13 @@
+services:
+  games:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Set this to whatever address players will actually use:
+      # a public IP (http://203.0.113.5:8080) or a domain
+      # (https://games.example.com). It's only used for the startup
+      # banner/shareable link — it does not need to match exactly for
+      # the games themselves to work.
+      PUBLIC_URL: "http://localhost:8080"
+    restart: unless-stopped

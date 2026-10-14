@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Matatu Rush — a two-player, hot-seat Kenyan reskin of Quoridor. Players race a vehicle across a 9×9 grid to the rival's stage, dropping "Kanjo Spikes" (roadblocks) to force detours without ever fully boxing the rival in. Built with TypeScript + HTML Canvas + Vite — no game engine, no framework, no backend.
+Matatu Rush — a two-player Kenyan reskin of Quoridor. Players race a vehicle across a 9×9 grid to the rival's stage, dropping "Kanjo Spikes" (roadblocks) to force detours without ever fully boxing the rival in. Built with TypeScript + HTML Canvas + Vite — no game engine, no UI framework. Playable hot-seat (no backend) or online via an authoritative WebSocket relay (`server/`).
 
 ## Commands
 
@@ -21,6 +21,15 @@ Run a single test file: `npx vitest run src/game/rules.test.ts`
 Run tests matching a name: `npx vitest run -t "overtake"`
 
 There is no lint script configured; `tsc --noEmit` (strict mode, `noUnusedLocals`/`noUnusedParameters`) is the only static check, and it runs as part of `npm run build`.
+
+For online play:
+
+```bash
+npm run server       # tsx watch server/index.ts — serves dist/index.html + the WS relay, with reload
+npm run start         # tsx server/index.ts — same, no watch (what production runs)
+```
+
+Run `npm run build` first so there's a `dist/index.html` to serve. Then open `http://localhost:8080/?online` in two tabs/browsers.
 
 ## Architecture
 
@@ -43,6 +52,13 @@ keys, taps ──► main.ts (input → rules → HUD) ──► rules.ts (pure 
 ### State machine
 
 `GamePhase`: `SELECT_VEHICLES → CHOOSE_ACTION ⇄ (turns) → GAME_OVER`. Within `CHOOSE_ACTION`, `ActionMode` toggles between `DRIVE` and `SPIKES`. All mutating rule functions (`applyMove`, `applyRoadblock`) throw on illegal input rather than failing silently — callers (`main.ts`) are expected to check `isLegalMove`/`validateRoadblock` first and surface rejection reasons (`SpikeRejection`) to the player via `strings.ts`.
+
+### Online play
+
+- **`src/net.ts`** (`OnlineClient`) — a thin WebSocket wrapper around server messages (`assigned`, `lobby`, `state`, `error`). It connects same-origin: `${protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`, no path — so it works unmodified regardless of what host/IP/domain/sub-path serves the page. `mode` (drive vs. spikes) is purely local UI state and never travels over the wire. `main.ts` reads `?online` (and optionally `?online=ws://...` for pointing dev builds at a separate relay) to switch from the local hot-seat loop to rendering whatever `MatchState` the server echoes back.
+- **`src/game/types.ts`**'s `MatchState`/`Position`/`Roadblock`/`VehicleType` are shared verbatim between client and server — the server is just another caller of `rules.ts`.
+- **`server/relay.ts`** (`attachMatatuRushRelay(httpServer)`) — the authoritative relay. One process = one match (two seats); it is the *only* thing allowed to call `applyMove`/`applyRoadblock`/`validateRoadblock`/`isLegalMove` server-side and decide what actually happened. Takes any `http.Server` and attaches a `WebSocketServer` to it — doesn't care who's handling plain HTTP requests on that server.
+- **`server/index.ts`** — the standalone entry point: a plain `node:http` server that serves `dist/index.html` and calls `attachMatatuRushRelay` on itself, so solo players need only one address (`http(s)://host[:port]/?online`). The repo root also has its own server (`../server/index.ts`) that serves this game alongside others from one shared host/port, reusing this same `relay.ts` — see the root `CLAUDE.md` for that.
 
 ## Docs
 

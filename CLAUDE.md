@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A monorepo-by-folder of small, self-contained browser games, each built from scratch with **TypeScript + HTML Canvas + Vite — no game engine, no UI framework**. Each game lives in its own top-level directory with its own `package.json`, `node_modules`, and build; there is no shared root tooling or workspace config. `cd` into a game's directory before running any command.
+A monorepo-by-folder of small, self-contained browser games, each built from scratch with **TypeScript + HTML Canvas + Vite — no game engine, no UI framework**. Each game lives in its own top-level directory with its own `package.json`, `node_modules`, and build. The root also has its own minimal `package.json` — for the unified games server described below, not a workspace/monorepo tool. `cd` into a game's directory before running that game's own commands.
 
 - **`kanjo-escape/`** — single-player hidden-movement chase. One human vs. a computer opponent; no networking.
 - **`matatu-rush/`** — two-player hot-seat board game (local), with an optional authoritative WebSocket server for online play.
+- **`server/`** (root) — a single Node server that serves the game list and every game's build from one host:port, so the whole thing can be deployed behind one public IP or domain. See "Unified games server" below.
 
 ## Commands
 
@@ -38,6 +39,20 @@ npm run start         # tsx server/index.ts (no watch)
 
 ```bash
 npm run simulate     # vite-node scripts/simulate.ts — 600 AI-vs-AI games, used to balance RULES
+```
+
+From the **repo root**, the unified games server:
+
+```bash
+npm install
+npm run build        # builds both kanjo-escape and matatu-rush (npm --prefix per game)
+npm start            # tsx server/index.ts — serves /games, /games/kanjo-escape, /games/matatu-rush
+```
+
+Or via Docker (multi-stage build; final image has no dev tooling, just the two builds + the server):
+
+```bash
+docker compose up --build
 ```
 
 ## Shared architecture principle
@@ -72,8 +87,20 @@ Every rules function is pure: `(state, input) => newState | answer`. No DOM, no 
 - **`src/renderer.ts`** — draws one frame from a `MatchState` snapshot. Owns only visual state (pawn tweens, spike pop-in timers); never mutates real state, only animates toward it.
 - **`src/main.ts`** — conductor: holds the single `MatchState` plus an undo `history` stack, wires input, drives the `requestAnimationFrame` loop. Supports snapshot/restore via `window.claude.hot` so a running match survives hot-reload inside the Claude artifact viewer.
 - **`GamePhase`**: `SELECT_VEHICLES → CHOOSE_ACTION ⇄ (turns) → GAME_OVER`. Within `CHOOSE_ACTION`, `ActionMode` toggles `DRIVE`/`SPIKES`.
-- **Online play**: `src/net.ts` (`OnlineClient`) is a thin WebSocket wrapper — `mode` (drive vs. spikes) is purely local UI state and never travels over the wire. **`server/index.ts`** is authoritative: one process = one match (two seats); it is the only thing allowed to call into `rules.ts` server-side, and it serves the built `dist/index.html` *and* the WebSocket relay from the same HTTP port, so online players need only one address (`http(s)://host[:port]/?online`). Run `npm run build` before `npm run server`/`npm run start` so the server has something to serve.
+- **Online play**: `src/net.ts` (`OnlineClient`) is a thin WebSocket wrapper — `mode` (drive vs. spikes) is purely local UI state and never travels over the wire. It connects same-origin (`ws(s)://<location.host>`, no path), so the relay works unmodified no matter what host/IP/domain/sub-path serves the page. **`server/relay.ts`** (`attachMatatuRushRelay(httpServer)`) is the authoritative relay: one process = one match (two seats); it's the only thing allowed to call into `rules.ts` server-side. It attaches to *any* `http.Server` passed in. **`server/index.ts`** is matatu-rush's standalone wrapper around it — serves the built `dist/index.html` plus the relay on one port, so solo players need only one address (`http(s)://host[:port]/?online`). The root unified server (`../server/index.ts`) attaches the same `relay.ts` to its own HTTP server instead, so online play works identically whether matatu-rush is run standalone or served alongside other games. Run `npm run build` before `npm run server`/`npm run start` so there's a `dist/index.html` to serve.
 - Docs: `README.md` (play/controls), `GUIDE.md` (milestone-by-milestone build tutorial), `docs/matatu-rush-blueprint.md` (original design spec).
+
+## Unified games server (root `server/`, `package.json`, `Dockerfile`)
+
+**`server/index.ts`** is a single plain-`node:http` server (no Express) exposing every game from one host:port:
+
+- `/` and `/games` — a generated landing page listing all games (`GAMES` array at the top of the file; add an entry there plus a build step to add a new game).
+- `/games/<id>` — reads and serves that game's `dist/index.html` directly. Works unmodified from any sub-path because each build is a fully self-contained single file (no `/assets/...` references, no vite `base` config needed).
+- The same HTTP server also has `attachMatatuRushRelay` (from `matatu-rush/server/relay.ts`) attached for the WebSocket upgrade, so matatu-rush's online mode works through this server too. **Only one online game exists today**, so the relay claims every upgrade request regardless of path; if a second online game is added, give each relay its own path and dispatch on `request.url` in a shared `upgrade` handler instead of attaching two `WebSocketServer({ server })` instances to the same server.
+
+Config is env vars, not files: `PORT` (default 8080), `HOST` (default `0.0.0.0`, needed to be reachable via a public IP/container), `PUBLIC_URL` (optional — only used for the startup banner's shareable link, e.g. `http://<public-ip>:8080` or `https://games.example.com`; the server itself works at any address since matatu-rush's WS client is same-origin).
+
+**`Dockerfile`** is a two-stage build: stage `build` runs `npm ci && npm run build` inside each game directory (producing their `dist/index.html`); stage `runtime` installs only the root's production deps (`tsx`, `ws`) and copies in `server/`, both games' `dist/` output, and matatu-rush's `src/`+`server/` (needed because `relay.ts` imports game rules straight from TypeScript source via `tsx`, not from the built bundle). `docker-compose.yml` wraps this with a `PUBLIC_URL` example and a `8080:8080` port mapping — change the host-side port or add your reverse proxy/TLS termination in front as needed.
 
 ## Shared conventions
 
