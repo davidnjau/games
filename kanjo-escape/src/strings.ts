@@ -50,15 +50,15 @@ export const S = {
 export function outcomeText(human: Side, winner: Side, reason: OutcomeReason, place: string) {
   const won = human === winner;
   if (human === 'HAWKER') {
-    if (won) return { title: 'UMECHAPA ESCAPE!', sub: 'Umecheza kama wewe boss! Mizigo iko salama.', won };
-    if (reason === 'CAUGHT') return { title: 'UMESHIKWA!', sub: `Kanjo wamekukamata ${place}. Mzigo umeenda.`, won };
-    if (reason === 'CORNERED') return { title: 'UMEZINGIRWA!', sub: 'Hakuna njia ya kutoroka. Kanjo wamekuzunguka.', won };
+    if (won) return { title: 'UMECHAPA ESCAPE!', sub: 'Umecheza kama bossy! Uko sharp! Mali bado iko on.', won };
+    if (reason === 'CAUGHT') return { title: 'UMESHIKWA!', sub: `Kanjo wamekushika ${place}. Mamba mslow!.`, won };
+    if (reason === 'CORNERED') return { title: 'UMEZINGIRWA!', sub: 'Waah sa utaduu? Hakuna njia ya kutoroka. Kanjo wako all over.', won };
     return { title: 'MUDA UMEISHA!', sub: 'Stage zimefungwa. Kanjo wamekuchosha.', won };
   }
   if (won) {
-    if (reason === 'CAUGHT') return { title: 'UMEMSHIKA!', sub: `Kazi safi! Mzigo umekamatwa ${place}.`, won };
+    if (reason === 'CAUGHT') return { title: 'UMEMSHIKA!', sub: `Afande Kiptanui, kazi safi, Efidence kwa kalatas! ${place}.`, won };
     if (reason === 'CORNERED') return { title: 'AMEZINGIRWA!', sub: 'Hawker hana pa kwenda. Kazi safi, Kanjo.', won };
     return { title: 'UMEMCHOSHA!', sub: 'Muda umeisha na hawker hajafika stage.', won };
   }
-  return { title: 'AMECHAPA ESCAPE!', sub: `Hawker ameingia stage ${place}. Mzigo umepotea.`, won };
+  return { title: 'AMECHAPA ESCAPE!', sub: `Hawker ameingia stage ${place}. Efidence imeenda.`, won };
 }
