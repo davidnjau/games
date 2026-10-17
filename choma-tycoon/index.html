@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="sw">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Choma Tycoon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-icon" aria-hidden="true">🔥</span>
+          <div class="brand-text">
+            <h1 class="logo">Choma <span>Tycoon</span></h1>
+            <p class="brand-sub" id="brand-sub"></p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <span class="stat-chip score" id="score-chip"><span class="stat-label" id="score-label"></span><span id="hud-score">0</span></span>
+          <span class="stat-chip high" id="high-chip"><span class="stat-label" id="high-label"></span><span id="hud-high">0</span></span>
+          <button class="icon-btn" id="sound" type="button"></button>
+          <button class="icon-btn" id="to-menu" type="button" hidden></button>
+        </div>
+      </header>
+
+      <section class="menu" id="menu">
+        <p class="tagline" id="tagline"></p>
+        <p class="intro" id="intro"></p>
+        <button class="cta big" id="start-btn" type="button"></button>
+        <div class="howto">
+          <ul id="howto-list"></ul>
+        </div>
+      </section>
+
+      <main class="game" id="game" hidden>
+        <div class="hud-row">
+          <div class="hud-stat"><span class="hud-label" id="time-label"></span><span class="hud-value" id="time-left"></span></div>
+          <div class="hud-stat"><span class="hud-label" id="level-label"></span><span class="hud-value" id="level"></span></div>
+        </div>
+        <div class="timebar"><div class="timebar-fill" id="timebar-fill"></div></div>
+
+        <div class="customers" id="customers"></div>
+
+        <div class="tray-row">
+          <div class="tray" id="tray"></div>
+          <div class="tray-actions">
+            <button class="ghost" id="clear-btn" type="button"></button>
+            <button class="cta" id="serve-btn" type="button" disabled></button>
+          </div>
+        </div>
+
+        <div class="ingredients" id="ingredients"></div>
+
+        <p class="feedback-banner" id="feedback-banner"></p>
+
+        <div class="raid-overlay" id="raid-overlay" hidden>
+          <p class="raid-warning" id="raid-warning"></p>
+          <p class="raid-sub" id="raid-sub"></p>
+          <button class="hide-btn" id="hide-btn" type="button">
+            <svg class="hide-ring" viewBox="0 0 100 100" aria-hidden="true">
+              <circle class="hide-ring-track" cx="50" cy="50" r="46" />
+              <circle class="hide-ring-fill" id="hide-ring-fill" cx="50" cy="50" r="46" />
+            </svg>
+            <span id="hide-btn-label"></span>
+          </button>
+        </div>
+        <p class="hiding-banner" id="hiding-banner" hidden></p>
+
+        <div class="overlay" id="end" hidden>
+          <div class="end-sheet">
+            <h2 class="end-title" id="end-title"></h2>
+            <p class="end-sub" id="end-sub"></p>
+            <p class="end-high" id="end-high" hidden></p>
+            <div class="row">
+              <button class="cta" id="rematch" type="button"></button>
+              <button class="ghost" id="end-menu" type="button"></button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
