@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="sw">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Shillings & Stages</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <h1 class="logo">Shillings<span>&amp;Stages</span></h1>
+        <div class="turn" id="turn" aria-live="polite"></div>
+        <button class="icon-btn" id="sound" type="button"></button>
+      </header>
+
+      <section class="setup" id="setup">
+        <p class="tagline" id="setup-tagline"></p>
+        <div class="player-count" id="player-count"></div>
+        <button class="cta big" id="setup-start" type="button"></button>
+      </section>
+
+      <main class="game" id="game" hidden>
+        <div class="board-wrap" id="board-wrap">
+          <canvas class="board" id="board" aria-label="Shillings &amp; Stages board, 40 spaces"></canvas>
+        </div>
+
+        <aside class="dashboard" id="dashboard" aria-label="Players"></aside>
+
+        <section class="turn-panel">
+          <div class="dice" id="dice" aria-live="polite"></div>
+          <p class="feedback-banner" id="feedback-banner" aria-live="polite"></p>
+          <div class="action-bar" id="action-bar"></div>
+        </section>
+      </main>
+    </div>
+
+    <div class="overlay" id="modal" hidden>
+      <div class="sheet" id="modal-sheet"></div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

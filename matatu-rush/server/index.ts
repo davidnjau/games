@@ -15,7 +15,7 @@ import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { attachMatatuRushRelay } from './relay';
+import { createMatatuRushRelay } from './relay';
 
 const PORT = Number(process.env.PORT ?? 8080);
 const DIST_HTML = join(dirname(fileURLToPath(import.meta.url)), '../dist/index.html');
@@ -31,7 +31,10 @@ const httpServer = createServer((_req, res) => {
   }
 });
 
-attachMatatuRushRelay(httpServer);
+const wss = createMatatuRushRelay();
+httpServer.on('upgrade', (req, socket, head) => {
+  wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
+});
 
 httpServer.listen(PORT, () => {
   console.log(`Matatu Rush listening on http://localhost:${PORT} (and ws on the same port)`);

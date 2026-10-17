@@ -5,12 +5,12 @@
 // rules.ts and decide what actually happened. Clients just render
 // whatever MatchState gets broadcast back.
 //
-// Factored out of server/index.ts so the root games server (see
-// ../../server/index.ts) can attach the same relay to its own
-// HTTP server, alongside other games.
+// Constructed with `{ noServer: true }` — the caller (this game's own
+// server/index.ts, or the root games server) owns the HTTP server's
+// `upgrade` event and decides which relay a given request's path maps
+// to. See ../../server/index.ts for the shared multi-relay dispatch.
 // ─────────────────────────────────────────────────────────────
 
-import type { Server } from 'node:http';
 import { WebSocketServer, type WebSocket } from 'ws';
 import {
   applyMove,
@@ -27,8 +27,8 @@ interface Seat {
   ready: boolean;
 }
 
-/** Attaches the Matatu Rush online relay to an existing HTTP server's upgrade handling. */
-export function attachMatatuRushRelay(httpServer: Server): void {
+/** Creates the Matatu Rush online relay. The caller wires it to an HTTP server's `upgrade` event. */
+export function createMatatuRushRelay(): WebSocketServer {
   const seats: Partial<Record<PlayerId, Seat>> = {};
   let match: MatchState | null = null;
 
@@ -69,7 +69,7 @@ export function attachMatatuRushRelay(httpServer: Server): void {
     broadcastLobby();
   }
 
-  const wss = new WebSocketServer({ server: httpServer });
+  const wss = new WebSocketServer({ noServer: true });
 
   wss.on('connection', (ws) => {
     const id: PlayerId | null = !seats[1] ? 1 : !seats[2] ? 2 : null;
@@ -139,4 +139,6 @@ export function attachMatatuRushRelay(httpServer: Server): void {
       broadcastLobby();
     });
   });
+
+  return wss;
 }
