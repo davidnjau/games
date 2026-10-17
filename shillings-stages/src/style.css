@@ -1,0 +1,212 @@
+/* Dark-mode Nairobi property-trading look: asphalt blacks, shilling gold,
+   matatu-stage reds/greens. Board-game pace — dense info, calm palette. */
+:root {
+  --night: #0f1115;
+  --panel: #171a21;
+  --slab: #1e222b;
+  --kerb: #2a2f3a;
+  --paper: #eef1f7;
+  --smoke: #8b93a7;
+  --gold: #ffc23c;
+  --matatu-red: #e8453c;
+  --kachumbari: #4caf6e;
+  --danger: #ff4d6d;
+  --sky: #3ea0ff;
+
+  --font-display: 'Bungee', 'Arial Black', Impact, sans-serif;
+  --font-body: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  --font-util: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at top, #1b2030 0%, var(--night) 60%);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+button:disabled { cursor: not-allowed; opacity: 0.4; }
+
+.app {
+  min-height: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-inline: 14px;
+  padding-block: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Top bar ─────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--kerb);
+}
+.logo {
+  font-family: var(--font-display);
+  font-size: 18px;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+.logo span { color: var(--gold); }
+.turn {
+  margin-left: auto;
+  font-family: var(--font-util);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--gold);
+}
+.icon-btn {
+  background: var(--slab);
+  border: 1px solid var(--kerb);
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+}
+
+/* ── Setup screen ───────────────────────────────── */
+.setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 16px;
+  text-align: center;
+}
+.tagline { color: var(--smoke); max-width: 420px; }
+.player-count { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.player-count button {
+  background: var(--slab);
+  border: 1px solid var(--kerb);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+}
+.player-count button[aria-pressed="true"] {
+  background: var(--gold);
+  color: var(--night);
+  border-color: var(--gold);
+}
+.cta {
+  background: var(--gold);
+  color: var(--night);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-weight: 700;
+  font-family: var(--font-util);
+  letter-spacing: 0.3px;
+}
+.cta.big { font-size: 16px; padding: 14px 28px; }
+.ghost {
+  background: transparent;
+  color: var(--paper);
+  border: 1px solid var(--kerb);
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 600;
+}
+
+/* ── Main layout ───────────────────────────────── */
+.game {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 12px;
+}
+@media (max-width: 860px) {
+  .game { grid-template-columns: 1fr; }
+}
+
+.board-wrap {
+  display: flex;
+  justify-content: center;
+  background: var(--kerb);
+  border: 2px solid var(--kerb);
+  border-radius: 10px;
+  padding: 8px;
+}
+.board {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Dashboard ─────────────────────────────────── */
+.dashboard { display: flex; flex-direction: column; gap: 8px; }
+.player-card {
+  background: var(--panel);
+  border: 1px solid var(--kerb);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.player-card.active { border-color: var(--gold); }
+.player-card.bankrupt { opacity: 0.4; }
+.player-card-head { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.player-dot { width: 10px; height: 10px; border-radius: 50%; }
+.player-cash { margin-left: auto; font-family: var(--font-util); color: var(--gold); }
+.player-props { font-size: 11px; color: var(--smoke); margin-top: 4px; }
+
+/* ── Turn panel ───────────────────────────────── */
+.turn-panel {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.dice { font-size: 28px; font-family: var(--font-display); letter-spacing: 6px; min-height: 36px; }
+.feedback-banner { min-height: 18px; color: var(--gold); font-weight: 600; text-align: center; }
+.action-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.action-bar button {
+  background: var(--slab);
+  border: 1px solid var(--kerb);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+}
+.action-bar button.primary { background: var(--gold); color: var(--night); border-color: var(--gold); }
+.action-bar button.danger { background: var(--danger); color: var(--night); border-color: var(--danger); }
+
+/* ── Modal ────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 9, 12, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 10;
+}
+.sheet {
+  background: var(--panel);
+  border: 1px solid var(--kerb);
+  border-radius: 16px;
+  padding: 20px;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sheet h2 { margin: 0; font-family: var(--font-display); font-size: 16px; }
+.sheet p { margin: 0; color: var(--smoke); }
+.sheet .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }

@@ -99,13 +99,17 @@ const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
 //
 // In production (`npm run build` + `npm run start`) the relay and the
 // static page are served from the same host:port, so the default below
-// just reconnects to wherever this page came from. Local dev runs them
-// as two separate processes (`npm run dev` on 5173, `npm run server` on
-// 8080) — pass `?online=ws://localhost:8080` to point at the relay.
+// just reconnects to wherever this page came from, at this game's
+// dedicated relay path (`/ws/matatu-rush` — needed because the root
+// games server dispatches more than one game's relay off one shared
+// HTTP server; see ../../server/index.ts). Local dev runs them as two
+// separate processes (`npm run dev` on 5173, `npm run server` on
+// 8080) — pass `?online=ws://localhost:8080/ws/matatu-rush` to point
+// at the relay.
 
 const params = new URLSearchParams(location.search);
 const ONLINE = params.has('online');
-const SAME_ORIGIN_WS = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`;
+const SAME_ORIGIN_WS = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/matatu-rush`;
 const SERVER_URL = params.get('online') || SAME_ORIGIN_WS;
 
 let myPlayerId: PlayerId | null = null;

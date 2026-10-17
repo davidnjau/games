@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        game: [kanjo-escape, matatu-rush]
+        game: [kanjo-escape, matatu-rush, choma-tycoon, shillings-stages]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

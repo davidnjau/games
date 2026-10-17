@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npm --prefix kanjo-escape run build && npm --prefix matatu-rush run build",
+    "build": "npm --prefix kanjo-escape run build && npm --prefix matatu-rush run build && npm --prefix choma-tycoon run build && npm --prefix shillings-stages run build",
     "start": "tsx server/index.ts"
   },
   "dependencies": {
