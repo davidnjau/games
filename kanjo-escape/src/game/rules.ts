@@ -14,9 +14,11 @@
 import { askariCanEnter, askariCanUse, hawkerCanEnter, links } from './graph';
 import { HAWKER_STARTS, NODES, SQUAD_START } from './map';
 import {
+  DIFFICULTY_RULES,
   RULES,
   type Askari,
   type AskariOption,
+  type Difficulty,
   type EdgeKind,
   type MatchState,
   type Move,
@@ -26,20 +28,31 @@ import {
 
 export type Rng = () => number;
 
-export const isRevealRound = (round: number): boolean => round % RULES.revealEvery === 0;
+/** Merges a difficulty's deltas onto the NORMAL baseline. */
+export const rulesFor = (difficulty: Difficulty): typeof RULES => ({
+  ...RULES,
+  ...DIFFICULTY_RULES[difficulty],
+});
+
+export const isRevealRound = (round: number, revealEvery: number = RULES.revealEvery): boolean =>
+  round % revealEvery === 0;
 
 /** Rounds until the next reveal, counting the current round if it is one. */
-export const roundsUntilReveal = (round: number): number =>
-  (RULES.revealEvery - (round % RULES.revealEvery)) % RULES.revealEvery;
+export const roundsUntilReveal = (round: number, revealEvery: number = RULES.revealEvery): number =>
+  (revealEvery - (round % revealEvery)) % revealEvery;
 
 // ── Setup ────────────────────────────────────────────────────
 
-export function createMatch(rng: Rng = Math.random): MatchState {
+export function createMatch(rng: Rng = Math.random, difficulty: Difficulty = 'NORMAL'): MatchState {
   const start = HAWKER_STARTS[Math.floor(rng() * HAWKER_STARTS.length)];
   return {
     round: 1,
     phase: 'HAWKER_TURN',
+    rules: rulesFor(difficulty),
     hawkerNode: start,
+    trafficDelay: false,
+    pendingCapture: null,
+    bailsUsed: 0,
     askaris: SQUAD_START.map((s) => ({ ...s, moved: false })),
     belief: [...HAWKER_STARTS],
     trail: [],
@@ -48,9 +61,9 @@ export function createMatch(rng: Rng = Math.random): MatchState {
   };
 }
 
-/** Strip the secret. Anything playing Kanjo gets THIS, never the full state. */
+/** Strip the secret and the match-only fields below. Anything playing Kanjo gets THIS, never the full state. */
 export function publicView(state: MatchState): PublicState {
-  const { hawkerNode: _secret, ...pub } = state;
+  const { hawkerNode: _secret, trafficDelay: _delay, pendingCapture: _capture, bailsUsed: _bails, ...pub } = state;
   return pub;
 }
 
@@ -89,7 +102,10 @@ export function advanceBelief(belief: NodeId[], via: EdgeKind, askaris: Askari[]
   return [...next];
 }
 
-export function applyHawkerMove(state: MatchState, to: NodeId): MatchState {
+/** Does a ROAD move roll traffic? Alleys are too narrow for the jams this models. */
+export const rollTraffic = (state: MatchState, rng: Rng): boolean => rng() < state.rules.trafficChance;
+
+export function applyHawkerMove(state: MatchState, to: NodeId, rng: Rng = Math.random): MatchState {
   if (state.phase !== 'HAWKER_TURN') throw new Error('Not the hawker’s turn');
   const move = hawkerMoves(state).find((m) => m.to === to);
   if (!move) throw new Error(`Hawker cannot move to ${to}`);
@@ -105,13 +121,18 @@ export function applyHawkerMove(state: MatchState, to: NodeId): MatchState {
     };
   }
 
-  const reveal = isRevealRound(state.round);
+  const reveal = isRevealRound(state.round, state.rules.revealEvery);
+  const trafficked = move.via === 'ROAD' && rollTraffic(state, rng);
   return {
     ...state,
     hawkerNode: to,
     phase: 'KANJO_TURN',
+    trafficDelay: trafficked,
     askaris: state.askaris.map((a) => ({ ...a, moved: false })),
-    trail: [...state.trail, { round: state.round, via: move.via, revealedAt: reveal ? to : null }],
+    trail: [
+      ...state.trail,
+      { round: state.round, via: move.via, revealedAt: reveal ? to : null, ...(trafficked ? { trafficked: true } : {}) },
+    ],
     belief: reveal ? [to] : advanceBelief(state.belief, move.via, state.askaris),
     lastSeen: reveal ? { node: to, round: state.round } : state.lastSeen,
   };
@@ -128,7 +149,7 @@ export function applyHawkerMove(state: MatchState, to: NodeId): MatchState {
 export function askariOptions(state: PublicState, unitId: string): AskariOption[] {
   const unit = state.askaris.find((a) => a.id === unitId);
   if (!unit || unit.moved || state.phase !== 'KANJO_TURN') return [];
-  const range = unit.kind === 'TRUCK' ? RULES.truckRange : RULES.footRange;
+  const range = unit.kind === 'TRUCK' ? state.rules.truckRange : state.rules.footRange;
   const others = new Set(state.askaris.filter((a) => a.id !== unitId).map((a) => a.node));
 
   const parent = new Map<NodeId, NodeId | null>([[unit.node, null]]);
@@ -164,12 +185,14 @@ export function applyAskariMove(state: MatchState, unitId: string, to: NodeId): 
   const askaris = state.askaris.map((a) => (a.id === unitId ? { ...a, node: to, moved: true } : a));
 
   if (to === state.hawkerNode) {
+    // A catch isn't game over yet — the hawker gets a chance to bail
+    // themselves out first. `payBail`/`declineBail` resolve it either way.
     return {
       ...state,
       askaris,
       belief: [to],
-      phase: 'GAME_OVER',
-      outcome: { winner: 'KANJO', reason: 'CAUGHT', node: to },
+      phase: 'BAIL_DECISION',
+      pendingCapture: { node: to },
     };
   }
   // A miss is information too: the hawker is not here.
@@ -185,12 +208,62 @@ export function holdAskari(state: MatchState, unitId: string): MatchState {
 export function endKanjoTurn(state: MatchState): MatchState {
   if (state.phase !== 'KANJO_TURN') throw new Error('Not the squad’s turn');
 
-  if (state.round >= RULES.maxRounds) {
+  if (state.round >= state.rules.maxRounds) {
     return { ...state, phase: 'GAME_OVER', outcome: { winner: 'KANJO', reason: 'TIME_UP', node: state.hawkerNode } };
+  }
+  if (state.trafficDelay) {
+    // Traffic held the hawker back: the squad gets one bonus round before the
+    // hawker moves again. They aren't being asked to move, so CORNERED can't
+    // apply yet — that check resumes the next time this phase really ends.
+    return {
+      ...state,
+      round: state.round + 1,
+      phase: 'KANJO_TURN',
+      trafficDelay: false,
+      askaris: state.askaris.map((a) => ({ ...a, moved: false })),
+    };
   }
   const next: MatchState = { ...state, round: state.round + 1, phase: 'HAWKER_TURN' };
   if (hawkerMoves(next).length === 0) {
     return { ...next, phase: 'GAME_OVER', outcome: { winner: 'KANJO', reason: 'CORNERED', node: state.hawkerNode } };
   }
   return next;
+}
+
+// ── Bail ─────────────────────────────────────────────────────
+//
+// A catch pauses the match in BAIL_DECISION rather than ending it outright.
+// These functions only resolve "what happens next" — they know nothing about
+// coins or cards. Whether the hawker *can* afford to bail is a wallet
+// question for main.ts to answer before calling either one.
+
+/** Coins needed for the next bail. Escalates so bailing isn't free insurance. */
+export const bailCost = (state: Pick<MatchState, 'rules' | 'bailsUsed'>): number =>
+  state.rules.bailCostBase * (state.bailsUsed + 1);
+
+/** Coins earned for reaching a stage — more for escaping with rounds to spare. */
+export const coinsForEscape = (
+  round: number,
+  rules: Pick<typeof RULES, 'maxRounds' | 'escapeCoinsBase' | 'escapeCoinsPerRound'>,
+): number => rules.escapeCoinsBase + Math.max(0, rules.maxRounds - round) * rules.escapeCoinsPerRound;
+
+/**
+ * The hawker buys their way out of the catch. Reuses `endKanjoTurn`'s own
+ * TIME_UP/CORNERED/traffic logic by handing it back a normal KANJO_TURN —
+ * bailing out doesn't exempt you from the clock or a bonus squad round.
+ */
+export function payBail(state: MatchState): MatchState {
+  if (state.phase !== 'BAIL_DECISION') throw new Error('No bail to pay');
+  return endKanjoTurn({ ...state, phase: 'KANJO_TURN', pendingCapture: null, bailsUsed: state.bailsUsed + 1 });
+}
+
+/** The hawker can't or won't pay: the catch stands. */
+export function declineBail(state: MatchState): MatchState {
+  if (state.phase !== 'BAIL_DECISION') throw new Error('No bail to decline');
+  return {
+    ...state,
+    phase: 'GAME_OVER',
+    pendingCapture: null,
+    outcome: { winner: 'KANJO', reason: 'CAUGHT', node: state.pendingCapture!.node },
+  };
 }

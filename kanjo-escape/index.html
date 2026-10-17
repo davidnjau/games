@@ -14,16 +14,34 @@
   <body>
     <div class="app">
       <header class="topbar">
-        <h1 class="logo">Kanjo <span>Escape</span></h1>
-        <span class="side-chip" id="side-chip" hidden></span>
+        <div class="brand">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5l-8-3Z" fill="currentColor" opacity="0.18" />
+            <path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5l-8-3Z" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+          <div class="brand-text">
+            <h1 class="logo">Kanjo <span>Escape</span></h1>
+            <p class="brand-sub" id="brand-sub"></p>
+          </div>
+        </div>
         <div class="top-actions">
-          <button class="chip-btn" id="sound" type="button"></button>
-          <button class="chip-btn" id="to-menu" type="button" hidden></button>
+          <span class="side-chip coin" id="coin-chip"></span>
+          <span class="mode-chip" id="mode-chip"><i class="dot"></i><span id="mode-chip-text"></span></span>
+          <span class="side-chip diff" id="diff-chip" hidden></span>
+          <span class="side-chip" id="side-chip" hidden></span>
+          <button class="icon-btn" id="sound" type="button"></button>
+          <button class="icon-btn menu-btn" id="to-menu" type="button" hidden></button>
         </div>
       </header>
 
       <section class="menu" id="menu">
         <p class="tagline" id="tagline"></p>
+        <p class="diff-label" id="diff-label"></p>
+        <div class="diff-row" id="diff-row">
+          <button class="diff-opt" id="diff-easy" type="button"></button>
+          <button class="diff-opt" id="diff-normal" type="button"></button>
+          <button class="diff-opt" id="diff-hard" type="button"></button>
+        </div>
         <div class="side-cards">
           <button class="side-card hawker" id="pick-hawker" type="button">
             <img src="" alt="" data-icon="hawker" />
@@ -36,17 +54,76 @@
             <span class="side-sub"></span>
           </button>
         </div>
+        <button class="ghost small" id="buy-card" type="button"></button>
         <div class="rules">
           <h2 id="rules-title"></h2>
           <ul id="rules-list"></ul>
         </div>
       </section>
 
+      <section class="menu" id="lobby" hidden>
+        <p class="tagline" id="lobby-tagline"></p>
+        <p class="diff-label" id="lobby-diff-label"></p>
+        <div class="diff-row" id="lobby-diff-row">
+          <button class="diff-opt" id="lobby-diff-easy" type="button"></button>
+          <button class="diff-opt" id="lobby-diff-normal" type="button"></button>
+          <button class="diff-opt" id="lobby-diff-hard" type="button"></button>
+        </div>
+        <div class="role-cards" id="role-cards">
+          <button class="role-card" id="role-hawker" type="button">
+            <span class="role-name"></span>
+            <span class="role-state"></span>
+          </button>
+          <button class="role-card" id="role-askari-1" type="button">
+            <span class="role-name"></span>
+            <span class="role-state"></span>
+          </button>
+          <button class="role-card" id="role-askari-2" type="button">
+            <span class="role-name"></span>
+            <span class="role-state"></span>
+          </button>
+          <button class="role-card" id="role-askari-3" type="button">
+            <span class="role-name"></span>
+            <span class="role-state"></span>
+          </button>
+        </div>
+        <button class="cta" id="lobby-ready" type="button"></button>
+        <p class="lobby-hint" id="lobby-hint"></p>
+      </section>
+
       <main class="game" id="game" hidden>
         <section class="board-col">
+          <div class="sector-info">
+            <span class="sector-tag" id="sector-tag"></span>
+            <p class="sector-line">
+              <span id="sector-place"></span> / <span class="sector-status" id="sector-status"></span>
+            </p>
+          </div>
+
           <div class="board-wrap">
             <canvas id="board" aria-label="Ramani ya CBD ya Nairobi"></canvas>
+
+            <div class="map-tools">
+              <button class="tool-btn" id="layers" type="button" title=""></button>
+              <button class="tool-btn" id="fullscreen" type="button" title=""></button>
+            </div>
+            <div class="compass" aria-hidden="true"><span>N</span></div>
+            <div class="coords" id="coords"></div>
+            <div class="map-legend" id="map-legend"></div>
+
             <div class="toast" id="toast" role="status" aria-live="assertive"></div>
+            <div class="overlay" id="bail" hidden>
+              <div class="end-sheet">
+                <img class="end-icon" id="bail-icon" alt="" />
+                <h2 class="end-title" id="bail-title"></h2>
+                <p class="end-sub" id="bail-sub"></p>
+                <div class="row">
+                  <button class="cta small" id="bail-pay" type="button"></button>
+                  <button class="cta small" id="bail-card" type="button" hidden></button>
+                  <button class="ghost small" id="bail-giveup" type="button"></button>
+                </div>
+              </div>
+            </div>
             <div class="overlay" id="end" hidden>
               <div class="end-sheet">
                 <img class="end-icon" id="end-icon" alt="" />
@@ -60,24 +137,41 @@
             </div>
           </div>
           <p class="place" id="place" aria-live="polite">&nbsp;</p>
+
+          <div class="round-tracker">
+            <div class="round-tracker-head">
+              <h3 id="progress-title"></h3>
+              <span class="clock-round" id="round"></span>
+            </div>
+            <ol class="trail" id="trail"></ol>
+            <div class="round-tracker-foot">
+              <span id="reveal"></span>
+            </div>
+          </div>
         </section>
 
         <aside class="side">
-          <div class="status" id="status"></div>
+          <div class="op-panel-head">
+            <span id="op-panel-label"></span>
+          </div>
 
-          <div class="clock">
-            <span class="clock-round" id="round"></span>
-            <span class="clock-reveal" id="reveal"></span>
+          <div class="side-toggle" id="side-toggle">
+            <span class="side-toggle-opt" id="toggle-hawker"></span>
+            <span class="side-toggle-opt" id="toggle-kanjo"></span>
+          </div>
+
+          <div class="mission">
+            <h3 id="mission-label"></h3>
+            <p class="mission-title" id="mission-title"></p>
+            <p class="mission-desc" id="mission-desc"></p>
+            <div class="status" id="status"></div>
           </div>
 
           <div class="block">
-            <h3 id="trail-title"></h3>
-            <ol class="trail" id="trail"></ol>
-            <div class="legend"><span class="lg road"></span>Barabara <span class="lg alley"></span>Alley <span class="lg seen"></span>Ameonekana</div>
-          </div>
-
-          <div class="block">
-            <h3 id="squad-title"></h3>
+            <div class="block-head">
+              <h3 id="squad-title"></h3>
+              <span class="count-badge" id="squad-count"></span>
+            </div>
             <div class="squad" id="squad"></div>
             <div class="squad-actions" id="squad-actions">
               <button class="ghost small" id="hold" type="button"></button>
@@ -85,11 +179,26 @@
             </div>
           </div>
 
-          <label class="intel">
-            <input type="checkbox" id="intel" checked />
-            <span class="intel-label" id="intel-label"></span>
-            <span class="intel-hint" id="intel-hint"></span>
-          </label>
+          <div class="ujasusi-row">
+            <label class="switch">
+              <input type="checkbox" id="intel" checked />
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+            </label>
+            <div class="ujasusi-text">
+              <span class="intel-label" id="intel-label"></span>
+              <p class="intel-hint" id="intel-hint"></p>
+            </div>
+          </div>
+
+          <div class="block">
+            <div class="block-head">
+              <h3 id="moves-title"></h3>
+              <span class="count-badge" id="moves-count"></span>
+            </div>
+            <div class="moves" id="moves"></div>
+          </div>
+
+          <p class="flavor" id="flavor"></p>
         </aside>
       </main>
     </div>

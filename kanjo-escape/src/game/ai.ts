@@ -13,14 +13,14 @@ import { NODES } from './map';
 import { STAGE_DISTANCE, UNIT_DISTANCE, bfs, hawkerCanEnter, links } from './graph';
 import { askariOptions, hawkerMovesFrom, isRevealRound, type Rng } from './rules';
 import type { Askari, MatchState, NodeId, PublicState } from './types';
-import { RULES } from './types';
+import type { RULES } from './types';
 
 // ── Hawker AI ────────────────────────────────────────────────
 
 /** Which nodes could any askari land on next squad turn? */
-function threatMap(askaris: Askari[], round: number): Map<NodeId, number> {
+function threatMap(askaris: Askari[], round: number, rules: typeof RULES): Map<NodeId, number> {
   const threat = new Map<NodeId, number>();
-  const fake: PublicState = { round, phase: 'KANJO_TURN', askaris: askaris.map((a) => ({ ...a, moved: false })), belief: [], trail: [], lastSeen: null, outcome: null };
+  const fake: PublicState = { round, phase: 'KANJO_TURN', rules, askaris: askaris.map((a) => ({ ...a, moved: false })), belief: [], trail: [], lastSeen: null, outcome: null };
   for (const a of askaris) {
     for (const o of askariOptions(fake, a.id)) threat.set(o.to, (threat.get(o.to) ?? 0) + 1);
   }
@@ -43,8 +43,8 @@ export function chooseHawkerMove(state: MatchState, rng: Rng = Math.random): Nod
   const exit = moves.find((m) => NODES[m.to].kind === 'STAGE');
   if (exit) return exit.to;
 
-  const threat = threatMap(state.askaris, state.round);
-  const revealing = isRevealRound(state.round);
+  const threat = threatMap(state.askaris, state.round, state.rules);
+  const revealing = isRevealRound(state.round, state.rules.revealEvery);
 
   let best = moves[0].to;
   let bestScore = -Infinity;
@@ -77,9 +77,13 @@ export interface SquadOrder {
 }
 
 /** Rounds for an askari to get to (or right next to) a node. */
-function reachTime(a: { kind: Askari['kind']; node: NodeId }, target: NodeId): number {
+function reachTime(
+  a: { kind: Askari['kind']; node: NodeId },
+  target: NodeId,
+  rules: Pick<typeof RULES, 'truckRange' | 'footRange'>,
+): number {
   const table = UNIT_DISTANCE[a.kind][a.node];
-  const range = a.kind === 'TRUCK' ? RULES.truckRange : RULES.footRange;
+  const range = a.kind === 'TRUCK' ? rules.truckRange : rules.footRange;
   const direct = table.get(target);
   if (direct !== undefined) return Math.ceil(direct / range);
   // Trucks can't enter alleys: count the time to the nearest mouth of the alley, plus a bit.
@@ -95,11 +99,15 @@ function reachTime(a: { kind: Askari['kind']; node: NodeId }, target: NodeId): n
 const urgency = (id: NodeId): number => 1 + 8 / (1 + STAGE_DISTANCE[id]) ** 1.3;
 
 /** Lower is better: weighted distance from the squad to every place the hawker might be. */
-function coverage(units: { kind: Askari['kind']; node: NodeId }[], belief: NodeId[]): number {
+function coverage(
+  units: { kind: Askari['kind']; node: NodeId }[],
+  belief: NodeId[],
+  rules: Pick<typeof RULES, 'truckRange' | 'footRange'>,
+): number {
   let total = 0;
   for (const b of belief) {
     let t = Infinity;
-    for (const u of units) t = Math.min(t, reachTime(u, b));
+    for (const u of units) t = Math.min(t, reachTime(u, b, rules));
     total += urgency(b) * Math.min(t, 6);
   }
   return total;
@@ -108,9 +116,15 @@ function coverage(units: { kind: Askari['kind']; node: NodeId }[], belief: NodeI
 /**
  * Plans the whole squad's turn at once by trying every combination of
  * moves (small enough here: a truck has ~12 options, a foot askari ~5).
+ *
+ * `unitIds`, if given, restricts which units the AI decides for — used
+ * online when only some askari seats are AI-controlled. Units left out
+ * are treated as staying put (not yet-decided human intent isn't planned
+ * around); callers should only invoke this once every *un-moved* unit
+ * outside `unitIds` has already acted or isn't AI-controlled.
  */
-export function chooseSquadOrders(pub: PublicState, rng: Rng = Math.random): SquadOrder[] {
-  const units = pub.askaris.filter((a) => !a.moved);
+export function chooseSquadOrders(pub: PublicState, rng: Rng = Math.random, unitIds?: string[]): SquadOrder[] {
+  const units = pub.askaris.filter((a) => !a.moved && (!unitIds || unitIds.includes(a.id)));
   const optionLists = units.map((u) => [
     null as NodeId | null,
     ...askariOptions(pub, u.id).map((o) => o.to),
@@ -139,7 +153,7 @@ export function chooseSquadOrders(pub: PublicState, rng: Rng = Math.random): Squ
         }
         return true;
       });
-      const score = coverage(placed, remaining) - catchChance * 120 + rng() * 0.5;
+      const score = coverage(placed, remaining, pub.rules) - catchChance * 120 + rng() * 0.5;
       if (score < bestScore) {
         bestScore = score;
         bestPlan = [...plan];
