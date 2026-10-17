@@ -79,6 +79,18 @@ export class Sound {
     this.tone(220, 0, 0.12, 'sawtooth', 0.07, 140);
   }
 
+  /** A stuck matatu honking twice — the traffic jam event. */
+  traffic(): void {
+    this.tone(300, 0, 0.1, 'sawtooth', 0.08, 260);
+    this.tone(300, 0.16, 0.1, 'sawtooth', 0.08, 260);
+  }
+
+  /** A relieved little rising chirp — bail paid, back on the street. */
+  bail(): void {
+    this.tone(500, 0, 0.08, 'triangle', 0.08, 700);
+    this.tone(700, 0.08, 0.14, 'triangle', 0.07, 950);
+  }
+
   caught(): void {
     // Siren sweeping up and down, then a thud.
     for (let i = 0; i < 3; i++) {

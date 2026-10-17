@@ -1,9 +1,47 @@
 // strings.ts — every word the player sees.
-import type { OutcomeReason, Side } from './game/types';
+import type { Difficulty, OutcomeReason, Side } from './game/types';
+import type { SeatRole } from './net';
 
 export const S = {
   title: 'Kanjo Escape',
   tagline: 'Mzigo kichwani, Kanjo nyuma yako.',
+  brandSub: 'Nairobi CBD · Hidden movement',
+  modeChip: 'Offline game · AI opponent',
+  modeChipOnline: 'Online · multiplayer',
+  sectorTag: 'Sector 01 / Central Business District',
+  sectorLine: 'Nairobi, Kenya',
+  liveOperation: 'Live operation',
+  operationClosed: 'Operation closed',
+  coords: '01°17\'09.6"S 36°49\'18.0"E · Nairobi County',
+  legendRoad: 'Road',
+  legendAlley: 'Alley',
+  legendStage: 'Matatu stage',
+  legendPossible: 'Possible position',
+  fullscreen: 'Fullscreen',
+  layers: 'Toggle Ujasusi',
+  sideHawker: 'Hawker',
+  sideKanjo: 'Kanjo squad',
+  opPanelLabel: 'Operation panel',
+  missionLabel: 'Your mission',
+  missionTitle: (side: Side) => (side === 'HAWKER' ? 'Blend in. Get out.' : 'Corner them. Make the catch.'),
+  missionDesc: (side: Side) =>
+    side === 'HAWKER'
+      ? 'Slip through the CBD and reach a matatu stage before Kanjo catches you.'
+      : "Track the hawker's trail and seal off every stage before round 15.",
+  onYourTail: 'On your tail',
+  yourSquad: 'Your squad',
+  unitsCount: (n: number) => `${n} unit${n === 1 ? '' : 's'}`,
+  availableMoves: 'Available moves',
+  optionsCount: (n: number) => `${n} option${n === 1 ? '' : 's'}`,
+  noMovesYet: 'Select a unit above to see its moves.',
+  aiTurnMoves: 'Kanjo is thinking...',
+  gameOverMoves: 'Operation over.',
+  nextWhistle: 'Next whistle',
+  operationProgress: 'Operation progress',
+  whistleRound: 'Whistle round',
+  hawkerIsRevealed: 'Hawker is revealed',
+  difficultyLabel: 'Noma ya operesheni',
+  difficulty: (d: Difficulty) => ({ EASY: 'Rahisi', NORMAL: 'Kawaida', HARD: 'Noma' })[d],
   playHawker: 'Cheza kama Hawker',
   playHawkerSub: 'Usikuwe mamba mslow ushikwe',
   playKanjo: 'Cheza kama Kanjo',
@@ -27,6 +65,17 @@ export const S = {
   hawkerMovedVia: (via: 'ROAD' | 'ALLEY') =>
     via === 'ALLEY' ? 'Hawker ameingia chochoro!' : 'Hawker amepita main.',
   waleWale: 'Oya oya!',
+  traffic: 'Foleni! Kanjo wanapata move ya ziada.',
+  coins: (n: number) => `${n} coin${n === 1 ? '' : 's'}`,
+  coinsEarned: (n: number) => `Umepata ${n} coins!`,
+  buyCard: (cost: number) => `Nunua jail-free card (${cost})`,
+  cardOwned: 'Una jail-free card',
+  bailPrompt: 'Umeshikwa! Una deal?',
+  bailSub: (place: string) => `Wamekukamata ${place}. Lipa bail ama cheza card uendelee na story.`,
+  payBail: (cost: number) => `Lipa bail (${cost})`,
+  useCard: 'Tumia jail-free card',
+  giveUp: 'Kata story',
+  bailed: 'Umelipa bail — endelea!',
   endTurn: 'Kata hii story',
   hold: 'Turia',
   intel: 'Ujasusi - (Hatujui inamean nini)',
@@ -44,6 +93,20 @@ export const S = {
   cantGo: 'Hapo zii!',
   selectUnit: 'Chagua Karau kwanza.',
   missed: 'Hakuna msee hapo.',
+
+  // Online lobby
+  lobbyTagline: 'Pick seat yako. Hawker moja, Kanjo mpaka watatu — AI inajaza iliyobaki.',
+  lobbyHint: 'Mshike afande apate ready, Kanjo wote wafike ready, ndo story ianze.',
+  roleName: (role: SeatRole) =>
+    ({ HAWKER: 'Hawker', ASKARI_1: `${S.truck} 1`, ASKARI_2: S.foot, ASKARI_3: `${S.truck} 2` })[role],
+  seatOpen: 'Open',
+  seatTaken: 'Imechukuliwa',
+  seatReady: 'Ready',
+  youPicked: 'Wewe — bonyeza ready',
+  youReady: 'Wewe — ready!',
+  lobbyReady: 'Niko ready',
+  opponentLeft: 'Mchezaji ametoka — rudi lobby.',
+  matchFull: 'Mchezo inaendelea — subiri hii imalizike.',
 };
 
 /** Win/lose text, written from the human player's point of view. */

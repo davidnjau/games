@@ -10,10 +10,12 @@
 // Each game build is a fully self-contained dist/index.html (see
 // each game's vite.config.ts — vite-plugin-singlefile inlines JS,
 // CSS and icons as data URIs), so serving it from a sub-path needs
-// no base-path config. Matatu Rush's online relay (its own
-// WebSocketServer) is attached to this same HTTP server; its client
-// connects same-origin (ws(s)://<host>, no path), so it works
-// unmodified regardless of which host/IP/domain this is reached at.
+// no base-path config. Kanjo Escape, Matatu Rush and Shillings & Stages
+// each have their own online relay (ws package WebSocketServer); all three
+// share this HTTP server's `upgrade` event via one dispatcher keyed on
+// request path (see below), and each client connects same-origin at its
+// own dedicated path, so it works unmodified regardless of which host/IP/
+// domain this is reached at.
 //
 // Config is via env vars, set however you run this (shell export,
 // Docker -e, docker-compose, systemd EnvironmentFile, ...):
@@ -30,7 +32,9 @@ import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { attachMatatuRushRelay } from '../matatu-rush/server/relay';
+import { createKanjoEscapeRelay } from '../kanjo-escape/server/relay';
+import { createMatatuRushRelay } from '../matatu-rush/server/relay';
+import { createShillingsStagesRelay } from '../shillings-stages/server/relay';
 
 const PORT = Number(process.env.PORT ?? 8080);
 const HOST = process.env.HOST ?? '0.0.0.0';
@@ -57,6 +61,18 @@ const GAMES: GameEntry[] = [
     name: 'Matatu Rush',
     tagline: 'Race your matatu to the stage and drop Kanjo Spikes to block your rival.',
     distHtml: join(ROOT, '../matatu-rush/dist/index.html'),
+  },
+  {
+    id: 'choma-tycoon',
+    name: 'Choma Tycoon',
+    tagline: "Run a Nairobi street food cart: serve orders fast and dodge the Kanjo raid.",
+    distHtml: join(ROOT, '../choma-tycoon/dist/index.html'),
+  },
+  {
+    id: 'shillings-stages',
+    name: 'Shillings & Stages',
+    tagline: 'Nunua mitaa, jenga biashara, epuka Kanjo — a Kenyan property-trading board game.',
+    distHtml: join(ROOT, '../shillings-stages/dist/index.html'),
   },
 ];
 
@@ -125,11 +141,25 @@ const httpServer = createServer((req, res) => {
   res.end('Not found');
 });
 
-// Matatu Rush is the only online game so far; its relay attaches to every
-// upgrade request on this server. If a second online game is added, give
-// each relay its own path and dispatch on `request.url` in the `upgrade`
-// event instead.
-attachMatatuRushRelay(httpServer);
+// Each online game's relay is constructed with `{ noServer: true }` (see
+// each relay.ts), so this server owns the single `upgrade` event and
+// dispatches to whichever relay matches the request path. Every online
+// game's client must connect to its own path accordingly.
+const RELAYS: Record<string, ReturnType<typeof createMatatuRushRelay>> = {
+  '/ws/kanjo-escape': createKanjoEscapeRelay(),
+  '/ws/matatu-rush': createMatatuRushRelay(),
+  '/ws/shillings-stages': createShillingsStagesRelay(),
+};
+
+httpServer.on('upgrade', (req, socket, head) => {
+  const pathname = new URL(req.url ?? '/', 'http://internal').pathname;
+  const wss = RELAYS[pathname];
+  if (!wss) {
+    socket.destroy();
+    return;
+  }
+  wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
+});
 
 httpServer.listen(PORT, HOST, () => {
   console.log(`Games listening on http://${HOST}:${PORT}`);
